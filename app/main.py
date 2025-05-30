@@ -1,13 +1,19 @@
 # ws_prueba/app/main.py
-from fastapi import FastAPI
+from fastapi import FastAPI, Request # Request en mayúscula aquí
 import asyncio
+import datetime # Para el año en el footer
 
 from app.core.config import settings
-from app.api.v1.router import api_router_v1 # Importamos la variable api_router_v1 correcta
+from app.api.v1.router import api_router_v1
 from app.db.session import init_db
 from app.services.data_poller import continuous_data_poller
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 
-# Crear la instancia de la aplicación FastAPI
+# ÚNICA Y CORRECTA INICIALIZACIÓN DE TEMPLATES
+# Debe estar antes de la definición de 'app = FastAPI(...)'
+templates = Jinja2Templates(directory="app/templates")
+
 app = FastAPI(
     title=settings.APP_TITLE,
     description=settings.APP_DESCRIPTION,
@@ -20,17 +26,27 @@ app = FastAPI(
 @app.on_event("startup")
 async def startup_event():
     print("Iniciando aplicación...")
-    init_db() # Crea la tabla de tokens si no existe
+    init_db()
     print("Programando la tarea de sondeo de datos en segundo plano...")
-    asyncio.create_task(continuous_data_poller()) # Inicia el poller de la ISS
+    asyncio.create_task(continuous_data_poller())
     print("Aplicación iniciada y lista.")
 
-# Incluir el router principal de la API v1 con su prefijo
 app.include_router(api_router_v1, prefix=settings.API_V1_STR)
 
-@app.get("/", summary="Endpoint raíz de la API", tags=["Root"])
-async def root():
-    return {
-        "message": f"Bienvenido a {settings.APP_TITLE}",
-        "documentation_v1": f"{settings.API_V1_STR}/docs"
+# ELIMINA CUALQUIER OTRA LÍNEA 'templates = Jinja2Templates(...)' QUE PUDIERA ESTAR AQUÍ ABAJO
+
+@app.get("/", response_class=HTMLResponse, summary="Página de Inicio", tags=["Root"])
+async def root(request: Request): # 'request' como nombre del parámetro
+    """
+    Muestra la página de inicio HTML con información sobre la API.
+    """
+    return templates.TemplateResponse(
+        "index.html",
+        {
+            "request": request, # Pasa el objeto request
+            "app_title": settings.APP_TITLE,
+            "app_description": settings.APP_DESCRIPTION,
+            "docs_url": app.docs_url,
+            "current_year": datetime.datetime.now().year
         }
+    )

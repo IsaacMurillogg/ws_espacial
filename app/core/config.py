@@ -1,3 +1,4 @@
+# app/core/config.py
 from pydantic_settings import BaseSettings, SettingsConfigDict
 import os
 
@@ -9,11 +10,10 @@ class Settings(BaseSettings):
     # Configuración JWT
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
-    # No definimos expiración aquí para tokens "permanentes" gestionados por la BD
 
     # API Externa
     ISS_API_URL: str = "http://api.open-notify.org/iss-now.json"
-    POLLING_INTERVAL_SECONDS: int = 10
+    POLLING_INTERVAL_SECONDS: int = 10 # IMPORTANTE: Debe ser int y un valor por defecto
 
     # Base de datos de Tokens
     SQLITE_DATABASE_URL: str = "instance/tokens.db"
@@ -23,3 +23,5 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 settings = Settings()
+
+# YA NO NECESITAMOS LAS LÍNEAS DE print() PARA DEPURACIÓN AQUÍ

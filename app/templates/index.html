@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ app_title }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <style>
+        :root {
+            --font-primary: 'Space Grotesk', sans-serif;
+            --font-secondary: 'Inter', sans-serif;
+
+            /* Light Theme */
+            --bg-light: #E0F7FA; /* Celeste muy claro, cielo de día */
+            --text-primary-light: #1E293B; 
+            --text-secondary-light: #475569; 
+            --accent-light: #0EA5E9; /* Azul cielo vibrante */
+            --accent-hover-light: #0284C7;
+            --card-bg-light: #FFFFFF;
+            --border-light: #CBD5E1;
+            --sun-color: #FFD700; /* Amarillo dorado para el sol */
+            --cloud-color: #FFFFFF;
+
+            /* Dark Theme */
+            --bg-dark: #0D1117; 
+            --text-primary-dark: #E2E8F0; 
+            --text-secondary-dark: #94A3B8; 
+            --accent-dark: #38BDF8; /* Azul cielo más claro para modo oscuro */
+            --accent-hover-dark: #0EA5E9;
+            --card-bg-dark: #1E293B; 
+            --border-dark: #334155;
+            --star-color: #FFFFFF;
+
+
+            /* Default to light mode variables */
+            --current-bg: var(--bg-light);
+            --current-text-primary: var(--text-primary-light);
+            --current-text-secondary: var(--text-secondary-light);
+            --current-accent: var(--accent-light);
+            --current-accent-hover: var(--accent-hover-light);
+            --current-card-bg: var(--card-bg-light);
+            --current-border: var(--border-light);
+        }
+
+        body.dark-mode {
+            --current-bg: var(--bg-dark);
+            --current-text-primary: var(--text-primary-dark);
+            --current-text-secondary: var(--text-secondary-dark);
+            --current-accent: var(--accent-dark);
+            --current-accent-hover: var(--accent-hover-dark);
+            --current-card-bg: var(--card-bg-dark);
+            --current-border: var(--border-dark);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-secondary);
+            background-color: var(--current-bg);
+            color: var(--current-text-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 100vh;
+            padding: 20px;
+            transition: background-color 0.5s ease, color 0.3s ease; /* Transición más larga para el fondo */
+            overflow-x: hidden;
+            position: relative; 
+        }
+
+        /* Contenedor para animaciones de fondo */
+        .background-animation-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            transition: opacity 0.5s ease-in-out;
+        }
+        
+        #star-background {
+            opacity: 0; /* Oculto por defecto */
+        }
+        body.dark-mode #star-background {
+            opacity: 1; /* Visible en modo oscuro */
+        }
+
+        #day-background {
+            opacity: 0; /* Oculto por defecto */
+        }
+        body.light-mode #day-background {
+            opacity: 1; /* Visible en modo claro */
+        }
+
+
+        /* Estrellas para Modo Oscuro */
+        .star {
+            position: absolute;
+            background-color: var(--star-color);
+            border-radius: 50%;
+            animation: twinkle 5s infinite ease-in-out alternate;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.1; transform: scale(0.5); }
+            100% { opacity: 0.8; transform: scale(1); }
+        }
+        
+        /* Elementos para Modo Claro: Sol y Nubes */
+        .sun {
+            position: absolute;
+            top: 10%;
+            left: 15%;
+            width: 100px;
+            height: 100px;
+            background-color: var(--sun-color);
+            border-radius: 50%;
+            box-shadow: 0 0 30px var(--sun-color), 0 0 60px var(--sun-color);
+            animation: pulseSun 10s infinite ease-in-out;
+        }
+        @keyframes pulseSun {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 30px var(--sun-color), 0 0 60px var(--sun-color); }
+            50% { transform: scale(1.05); box-shadow: 0 0 40px var(--sun-color), 0 0 80px var(--sun-color); }
+        }
+
+        .cloud {
+            position: absolute;
+            background-color: var(--cloud-color);
+            border-radius: 50px; /* Forma base de nube */
+            opacity: 0.8;
+            animation: moveCloud 60s linear infinite;
+        }
+        .cloud::before, .cloud::after { /* Partes adicionales de la nube */
+            content: '';
+            position: absolute;
+            background-color: var(--cloud-color);
+            border-radius: 50%;
+            opacity: 0.8;
+        }
+        /* Tamaños y posiciones específicas para cada nube generada por JS */
+
+        @keyframes moveCloud {
+            0% { transform: translateX(-200%); } /* Empieza fuera de la pantalla a la izquierda */
+            100% { transform: translateX(200vw); } /* Termina fuera de la pantalla a la derecha */
+        }
+
+
+        .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            flex-grow: 1;
+            max-width: 700px;
+            width: 100%;
+            z-index: 1; 
+            animation: fadeInContent 1s ease-out 0.2s;
+            animation-fill-mode: backwards;
+        }
+        
+        @keyframes fadeInContent {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .api-title {
+            font-family: var(--font-primary);
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--current-text-primary);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .api-subtitle {
+            font-size: 1.1rem;
+            color: var(--current-text-secondary);
+            margin-bottom: 24px;
+            max-width: 500px;
+        }
+
+        .developer-info {
+            font-size: 0.9rem;
+            color: var(--current-text-secondary);
+            margin-bottom: 32px;
+        }
+        .developer-info strong {
+            color: var(--current-text-primary);
+            font-weight: 500;
+        }
+
+        .cta-button {
+            font-family: var(--font-secondary);
+            background-color: var(--current-accent);
+            color: white; 
+            text-decoration: none;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            display: inline-block;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .cta-button:hover {
+            background-color: var(--current-accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+        }
+
+        .theme-switcher-container {
+            position: fixed; 
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+        }
+
+        #theme-switcher {
+            background-color: var(--current-card-bg);
+            border: 1px solid var(--current-border);
+            color: var(--current-text-secondary);
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s, border-color 0.3s, box-shadow 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        #theme-switcher:hover {
+            border-color: var(--current-accent);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+        }
+        #theme-switcher .material-icons-outlined {
+            font-size: 22px;
+            transition: transform 0.3s ease;
+        }
+        body.dark-mode #theme-switcher .light-icon { display: none; }
+        body.dark-mode #theme-switcher .dark-icon { display: inline-block; }
+        body.light-mode #theme-switcher .light-icon { display: inline-block; }
+        body.light-mode #theme-switcher .dark-icon { display: none; }
+
+        footer {
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--current-text-secondary);
+            border-top: 1px solid var(--current-border);
+            margin-top: 40px; 
+            z-index: 1;
+        }
+
+        @media (max-width: 768px) {
+            .api-title { font-size: 2rem; }
+            .api-subtitle { font-size: 1rem; }
+            .cta-button { padding: 10px 24px; font-size: 0.95rem; }
+            .sun { width: 80px; height: 80px; }
+        }
+         @media (max-width: 480px) {
+            body { padding: 15px; }
+            .api-title { font-size: 1.75rem; }
+            .api-subtitle { font-size: 0.9rem; }
+            .theme-switcher-container { top: 15px; right: 15px; }
+            .sun { width: 60px; height: 60px; top: 5%; left: 5%;}
+        }
+
+    </style>
+</head>
+<body class="dark-mode"> 
+
+    <div id="star-background" class="background-animation-container"></div>
+    <div id="day-background" class="background-animation-container">
+        <div class="sun"></div>
+        </div>
+
+    <div class="theme-switcher-container">
+        <button id="theme-switcher" title="Cambiar tema">
+            <span class="material-icons-outlined light-icon">dark_mode</span>
+            <span class="material-icons-outlined dark-icon">light_mode</span>
+        </button>
+    </div>
+
+    <div class="content-wrapper">
+        <h1 class="api-title">{{ app_title }}</h1>
+        <p class="api-subtitle">{{ app_description }}</p>
+        <p class="developer-info">Desarrollada por <strong>{{ developer_name }}</strong></p>
+        <a href="{{ docs_url }}" class="cta-button">Ver Documentación</a>
+    </div>
+
+    <footer>
+        <p>&copy; {{ current_year }} {{ developer_name }}. API de Seguimiento de la Estación Espacial Internacional.</p>
+    </footer>
+
+    <script>
+        const themeSwitcher = document.getElementById('theme-switcher');
+        const body = document.body;
+        const starBackground = document.getElementById('star-background');
+        const dayBackground = document.getElementById('day-background');
+
+        function applyTheme(theme) {
+            body.classList.remove('light-mode', 'dark-mode');
+            body.classList.add(theme + '-mode');
+            localStorage.setItem('theme', theme);
+
+            // Controlar visibilidad de fondos animados
+            if (theme === 'dark') {
+                starBackground.style.opacity = '1';
+                dayBackground.style.opacity = '0';
+            } else {
+                starBackground.style.opacity = '0';
+                dayBackground.style.opacity = '1';
+            }
+        }
+
+        themeSwitcher.addEventListener('click', () => {
+            const newTheme = body.classList.contains('dark-mode') ? 'light' : 'dark';
+            applyTheme(newTheme);
+        });
+
+        // --- Animación de Estrellas (Modo Oscuro) ---
+        function createStars(numberOfStars) {
+            starBackground.innerHTML = ''; // Limpiar estrellas existentes
+            for (let i = 0; i < numberOfStars; i++) {
+                let star = document.createElement('div');
+                star.classList.add('star');
+                let size = Math.random() * 2 + 0.5; 
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 5 + 's'; 
+                starBackground.appendChild(star);
+            }
+        }
+        
+        // --- Animación de Día (Modo Claro) ---
+        function createClouds(numberOfClouds) {
+            const dayBgElement = document.getElementById('day-background');
+            // Limpiar nubes existentes, excepto el sol
+            Array.from(dayBgElement.getElementsByClassName('cloud')).forEach(cloud => cloud.remove());
+
+            for (let i = 0; i < numberOfClouds; i++) {
+                let cloud = document.createElement('div');
+                cloud.classList.add('cloud');
+                
+                // Tamaño base de la nube
+                let baseWidth = Math.random() * 100 + 80; // Ancho entre 80px y 180px
+                let baseHeight = baseWidth * (Math.random() * 0.3 + 0.4); // Alto proporcional
+                cloud.style.width = baseWidth + 'px';
+                cloud.style.height = baseHeight + 'px';
+                
+                // Posición inicial (Y aleatoria, X fuera de la pantalla)
+                cloud.style.top = Math.random() * 40 + 5 + '%'; // Nubes en la parte superior (5% a 45%)
+                cloud.style.left = '-200px'; // Inicia fuera de la pantalla
+
+                // Partes adicionales de la nube para forma más orgánica
+                let before = document.createElement('div'); // No es necesario añadirlo como clase
+                before.style.width = (baseWidth * 0.7) + 'px';
+                before.style.height = (baseHeight * 0.8) + 'px';
+                before.style.top = -(baseHeight * 0.4) + 'px';
+                before.style.left = (baseWidth * 0.15) + 'px';
+                before.classList.add('cloud-part'); // Para posible estilo común si se necesita
+
+                let after = document.createElement('div'); // No es necesario añadirlo como clase
+                after.style.width = (baseWidth * 0.5) + 'px';
+                after.style.height = (baseHeight * 0.6) + 'px';
+                after.style.top = -(baseHeight * 0.2) + 'px';
+                after.style.right = (baseWidth * 0.1) + 'px';
+                after.classList.add('cloud-part');
+
+                // Aplicar estilos a ::before y ::after directamente en JS no es posible.
+                // Los estilos para ::before y ::after ya están en el CSS.
+                // Solo necesitamos añadir los elementos cloud al DOM.
+                
+                // Duración y retraso de animación aleatorios para movimiento natural
+                cloud.style.animationDuration = (Math.random() * 40 + 50) + 's'; // Duración entre 50s y 90s
+                cloud.style.animationDelay = Math.random() * 20 + 's';
+                
+                dayBgElement.appendChild(cloud);
+            }
+        }
+
+        // Inicializar animaciones
+        createStars(100); 
+        createClouds(5); // Crear menos nubes para un look más limpio
+
+        // Cargar tema preferido
+        let preferredTheme = localStorage.getItem('theme');
+        if (!preferredTheme) {
+            preferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        applyTheme(preferredTheme); // Aplica el tema al cargar
+
+    </script>
+</body>
+</html>
