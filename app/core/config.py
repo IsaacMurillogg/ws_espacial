@@ -13,7 +13,7 @@ class Settings(BaseSettings):
 
     # API Externa
     ISS_API_URL: str = "http://api.open-notify.org/iss-now.json"
-    POLLING_INTERVAL_SECONDS: int = 10 # IMPORTANTE: Debe ser int y un valor por defecto
+    POLLING_INTERVAL_SECONDS: int = 20 # IMPORTANTE: Debe ser int y un valor por defecto
 
     # Base de datos de Tokens
     SQLITE_DATABASE_URL: str = "instance/tokens.db"
